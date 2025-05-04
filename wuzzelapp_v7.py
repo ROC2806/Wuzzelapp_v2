@@ -168,7 +168,7 @@ elif page == "Gruppenphase":
         - Bei Punktgleichheit und identischem Torverhältnis entscheidet ein Entscheidungstor über den Aufstieg.
 
         """)
-
+    st.subheader("Timer")
     components.html("""
                     <style>
                         :root {
@@ -500,7 +500,7 @@ elif page == "KO-Runde":
         - Seitenwechsel erfolgt nicht mehr
         - Nur Damen Spielen Golden Goal aus
         """)
-
+    st.subheader("Timer")
     components.html("""
                     <style>
                         :root {
@@ -584,7 +584,7 @@ elif page == "KO-Runde":
                     </div>
 
                     <script>
-                        const totalSeconds = 30;
+                        const totalSeconds = 300;
                         let interval;
 
                         function startTimer() {
