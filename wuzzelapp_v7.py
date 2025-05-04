@@ -1,27 +1,11 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import uuid
 import random
-#import json
-#import os
 from streamlit_option_menu import option_menu
 from sqlalchemy import create_engine
-from mongo2 import load_data, save_data
-
-
-# --- Dateipfad für die Speicherung ---
-#DATA_FILE = 'tournament_data_v5.json'
-
-# --- Funktion zum Laden und Speichern der Daten ---
-#def load_data():
-    #if os.path.exists(DATA_FILE):
-        #with open(DATA_FILE, 'r') as f:
-            #return json.load(f)
-    #return {"tournaments": {}, "current_tournament": None}
-
-#def save_data(data):
-    #with open(DATA_FILE, 'w') as f:
-        #json.dump(data, f)
+from mongo_v1 import load_data, save_data
 
 # --- Session State Setup ---
 if "data" not in st.session_state:
@@ -91,7 +75,7 @@ elif page == "Turnierverwaltung":
                 "group_phase": is_group_phase,
                 "groups": {"A": [], "B": []},
                 "group_matches": {"A": [], "B": []},
-                "schedule_created": False   # Neu: Merkt sich, ob Spielplan erstellt wurde
+                "schedule_created": False   
             }
             st.session_state.data["current_tournament"] = name
             save_data(st.session_state.data)
@@ -184,6 +168,136 @@ elif page == "Gruppenphase":
         - Bei Punktgleichheit und identischem Torverhältnis entscheidet ein Entscheidungstor über den Aufstieg.
 
         """)
+
+    components.html("""
+                    <style>
+                        :root {
+                            color-scheme: light dark;
+                        }
+
+                        .timer-container {
+                            font-family: sans-serif;
+                            text-align: center;
+                            padding: 10px;
+                        }
+
+                        .timer-button {
+                            font-size: 16px;
+                            padding: 6px 12px;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            background-color: #f44336; /* Helles Rot */
+                            color: white;
+                            transition: background-color 0.3s;
+                        }
+
+                        .timer-button:hover {
+                            background-color: #e53935; /* Dunkleres Rot beim Hover */
+                        }
+
+                        .timer-display {
+                            font-size: 24px;
+                            font-weight: bold;
+                            margin-top: 10px;
+                            color: var(--timer-text-color, #fff);  /* Dynamische Textfarbe */
+                        }
+
+                        .progress-bar-background {
+                            width: 100%;
+                            background-color: rgba(200, 200, 200, 0.2);
+                            height: 20px;
+                            border-radius: 10px;
+                            overflow: hidden;
+                            margin-top: 10px;
+                        }
+
+                        .progress-bar-fill {
+                            height: 100%;
+                            width: 100%;
+                            background-color: #f44336; /* Helles Rot für den Fortschrittsbalken */
+                            transition: width 1s linear;
+                        }
+
+                        /* Anpassung für Dark Mode */
+                        @media (prefers-color-scheme: dark) {
+                            .timer-display {
+                                color: #fff; /* Helle Schrift im Dark Mode */
+                            }
+
+                            .progress-bar-fill {
+                                background-color: #e57373; /* Helles Rot im Dark Mode */
+                            }
+                        }
+
+                        /* Anpassung für Light Mode */
+                        @media (prefers-color-scheme: light) {
+                            .timer-display {
+                                color: #333; /* Dunkle Schrift im Light Mode */
+                            }
+
+                            .progress-bar-fill {
+                                background-color: #f44336; /* Helles Rot im Light Mode */
+                            }
+                        }
+                    </style>
+
+                    <div class="timer-container">
+                        <button class="timer-button" onclick="startTimer()">Timer starten</button>
+                        <div id="timer" class="timer-display">05:00</div>
+
+                        <div class="progress-bar-background">
+                            <div id="progress" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <script>
+                        const totalSeconds = 30;
+                        let interval;
+
+                        function startTimer() {
+                            clearInterval(interval);
+                            let timeLeft = totalSeconds;
+                            updateDisplay(timeLeft);
+                            updateProgress(timeLeft);
+                            
+                            interval = setInterval(() => {
+                                timeLeft--;
+                                if (timeLeft >= 0) {
+                                    updateDisplay(timeLeft);
+                                    updateProgress(timeLeft);
+                                } else {
+                                    clearInterval(interval);
+                                    document.getElementById("timer").textContent = "Zeit abgelaufen!";
+                                    document.getElementById("progress").style.width = "0%";
+                                    playSound();
+                                }
+                            }, 1000);
+                        }
+
+                        function updateDisplay(seconds) {
+                            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                            const s = String(seconds % 60).padStart(2, '0');
+                            document.getElementById("timer").textContent = `${m}:${s}`;
+                        }
+
+                        function updateProgress(seconds) {
+                            const percent = (seconds / totalSeconds) * 100;
+                            document.getElementById("progress").style.width = `${percent}%`;
+                        }
+
+                        function playSound() {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = ctx.createOscillator();
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+                            oscillator.connect(ctx.destination);
+                            oscillator.start();
+                            oscillator.stop(ctx.currentTime + 1.5);
+                        }
+                    </script>
+                """, height=170)
+    
     teams = get_current("teams")
     group_mode = get_current("group_phase")
     schedule_created = get_current("schedule_created")
@@ -210,7 +324,6 @@ elif page == "Gruppenphase":
                                     group_matches[group].append({
                                         "match_number": match_number,
                                         "team1": t1, "team2": t2, "score": "-",
-                                        #"color": f"{t1} (Rot) vs {t2} (Blau)"
                                         "color": "Rot vs Blau"
                                     })
                                     match_number += 1
@@ -226,7 +339,6 @@ elif page == "Gruppenphase":
                                 matches.append({
                                     "match_number": match_number,
                                     "team1": t1, "team2": t2, "score": "-",
-                                    #"color": f"{t1} (Rot) vs {t2} (Blau)"
                                     "color": "Rot vs Blau"
                                 })
                                 match_number += 1
@@ -238,7 +350,6 @@ elif page == "Gruppenphase":
         else:
            # --- Ergebnisse eingeben ---
             if group_mode:
-                #st.subheader("Gruppenspiele")
                 with st.expander("Gruppenspiele (Rot vs. Blau)", expanded=True):
                     for group in ["A", "B"]:
                         st.subheader(f"Gruppe {group}")
@@ -246,7 +357,6 @@ elif page == "Gruppenphase":
                             col1, col2, col3 = st.columns([5, 1.5, 1.5])
                             with col1:
                                 st.text(f"{match['match_number']}. {match['team1']} vs {match['team2']}")
-                                #st.text(f"{match['match_number']}. {match['team1']} vs {match['team2']} ({match['color']})")
                             # Lade gespeichertes Ergebnis
                             saved_score = match.get('score', "-")
                             if saved_score != "-" and ":" in saved_score:
@@ -266,13 +376,11 @@ elif page == "Gruppenphase":
                             match['new_score'] = f"{goals1}:{goals2}"
 
             else:
-                #st.subheader("Gruppenspiele")
                 with st.expander("Gruppenspiele (Rot vs. Blau)", expanded=True):
                     for idx, match in enumerate(get_current("matches")):
                         col1, col2, col3 = st.columns([5, 1.5, 1.5])
                         with col1:
                             st.text(f"{match['match_number']}. {match['team1']} vs {match['team2']}")
-                            #st.text(f"{match['match_number']}. {match['team1']} vs {match['team2']} ({match['color']})")
                         saved_score = match.get('score', "-")
                         if saved_score != "-" and ":" in saved_score:
                             try:
@@ -393,6 +501,135 @@ elif page == "KO-Runde":
         - Nur Damen Spielen Golden Goal aus
         """)
 
+    components.html("""
+                    <style>
+                        :root {
+                            color-scheme: light dark;
+                        }
+
+                        .timer-container {
+                            font-family: sans-serif;
+                            text-align: center;
+                            padding: 10px;
+                        }
+
+                        .timer-button {
+                            font-size: 16px;
+                            padding: 6px 12px;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            background-color: #f44336; /* Helles Rot */
+                            color: white;
+                            transition: background-color 0.3s;
+                        }
+
+                        .timer-button:hover {
+                            background-color: #e53935; /* Dunkleres Rot beim Hover */
+                        }
+
+                        .timer-display {
+                            font-size: 24px;
+                            font-weight: bold;
+                            margin-top: 10px;
+                            color: var(--timer-text-color, #fff);  /* Dynamische Textfarbe */
+                        }
+
+                        .progress-bar-background {
+                            width: 100%;
+                            background-color: rgba(200, 200, 200, 0.2);
+                            height: 20px;
+                            border-radius: 10px;
+                            overflow: hidden;
+                            margin-top: 10px;
+                        }
+
+                        .progress-bar-fill {
+                            height: 100%;
+                            width: 100%;
+                            background-color: #f44336; /* Helles Rot für den Fortschrittsbalken */
+                            transition: width 1s linear;
+                        }
+
+                        /* Anpassung für Dark Mode */
+                        @media (prefers-color-scheme: dark) {
+                            .timer-display {
+                                color: #fff; /* Helle Schrift im Dark Mode */
+                            }
+
+                            .progress-bar-fill {
+                                background-color: #e57373; /* Helles Rot im Dark Mode */
+                            }
+                        }
+
+                        /* Anpassung für Light Mode */
+                        @media (prefers-color-scheme: light) {
+                            .timer-display {
+                                color: #333; /* Dunkle Schrift im Light Mode */
+                            }
+
+                            .progress-bar-fill {
+                                background-color: #f44336; /* Helles Rot im Light Mode */
+                            }
+                        }
+                    </style>
+
+                    <div class="timer-container">
+                        <button class="timer-button" onclick="startTimer()">Timer starten</button>
+                        <div id="timer" class="timer-display">05:00</div>
+
+                        <div class="progress-bar-background">
+                            <div id="progress" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <script>
+                        const totalSeconds = 30;
+                        let interval;
+
+                        function startTimer() {
+                            clearInterval(interval);
+                            let timeLeft = totalSeconds;
+                            updateDisplay(timeLeft);
+                            updateProgress(timeLeft);
+                            
+                            interval = setInterval(() => {
+                                timeLeft--;
+                                if (timeLeft >= 0) {
+                                    updateDisplay(timeLeft);
+                                    updateProgress(timeLeft);
+                                } else {
+                                    clearInterval(interval);
+                                    document.getElementById("timer").textContent = "Zeit abgelaufen!";
+                                    document.getElementById("progress").style.width = "0%";
+                                    playSound();
+                                }
+                            }, 1000);
+                        }
+
+                        function updateDisplay(seconds) {
+                            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                            const s = String(seconds % 60).padStart(2, '0');
+                            document.getElementById("timer").textContent = `${m}:${s}`;
+                        }
+
+                        function updateProgress(seconds) {
+                            const percent = (seconds / totalSeconds) * 100;
+                            document.getElementById("progress").style.width = `${percent}%`;
+                        }
+
+                        function playSound() {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = ctx.createOscillator();
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+                            oscillator.connect(ctx.destination);
+                            oscillator.start();
+                            oscillator.stop(ctx.currentTime + 1.5);
+                        }
+                    </script>
+                """, height=170)
+    
     teams = get_current("teams")
 
     if len(teams) < 4:
