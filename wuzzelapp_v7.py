@@ -252,7 +252,7 @@ elif page == "Gruppenphase":
                     </div>
 
                     <script>
-                        const totalSeconds = 30;
+                        const totalSeconds = 300;
                         let interval;
 
                         function startTimer() {
