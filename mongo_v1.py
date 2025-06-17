@@ -13,7 +13,7 @@ MONGO_CLUSTER = mongo_secrets["MONGO_CLUSTER"]
 MONGO_URI = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(MONGO_URI)
 db = client["Wuzzelapp"]
-collection = db["Wuzzelapp_1"]
+collection = db["Wuzzelapp_2"]
 
 def load_data():
     data = collection.find_one({"_id": "app_state"})
