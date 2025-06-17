@@ -32,7 +32,7 @@ with st.sidebar:
     current_tournament = st.session_state.data.get("current_tournament")
     if current_tournament:
         st.markdown("---")
-        st.subheader("Aktuelles Turnier")
+        #st.subheader("Aktuelles Turnier")
         st.write(f"**{current_tournament}**")
     else:
         st.markdown("---")
