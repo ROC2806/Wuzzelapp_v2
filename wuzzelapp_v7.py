@@ -68,7 +68,7 @@ with st.sidebar:
 
     #st.markdown("---")
 
-    st.subheader("Gruppenphase")
+    st.markdown("Gruppenphase")
     st.progress(progress_group)
     st.markdown(f"          {played_group} / {total_group} Spiele gespielt")
 
