@@ -72,7 +72,7 @@ with st.sidebar:
     st.progress(progress_group)
     st.markdown(f"          {played_group} / {total_group} Spiele gespielt")
 
-    st.subheader("KO-Runde")
+    st.markdown("KO-Runde")
     st.progress(progress_ko)
     st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
 
