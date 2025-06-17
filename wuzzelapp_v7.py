@@ -66,7 +66,7 @@ with st.sidebar:
     total_ko = 4
     progress_ko = int((played_ko / total_ko) * 100) if total_ko > 0 else 0
 
-    st.markdown("---")
+    #st.markdown("---")
 
     st.subheader("Gruppenphase")
     st.progress(progress_group)
