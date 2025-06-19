@@ -253,131 +253,154 @@ elif page == "Gruppenphase":
     st.subheader("Gruppenphase")
     st.subheader("Timer")
     components.html("""
-                    <style>
-                        :root {
-                            color-scheme: light dark;
-                        }
-
-                        .timer-container {
-                            font-family: sans-serif;
-                            text-align: center;
-                            padding: 10px;
-                        }
-
-                        .timer-button {
-                            font-size: 16px;
-                            padding: 6px 12px;
-                            border: none;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            background-color: #f44336;
-                            color: white;
-                            transition: background-color 0.3s;
-                        }
-
-                        .timer-button:hover {
-                            background-color: #e53935;
-                        }
-
-                        .timer-display {
-                            font-size: 24px;
-                            font-weight: bold;
-                            margin-top: 10px;
-                            color: var(--timer-text-color, #fff);
-                        }
-
-                        .progress-bar-background {
-                            width: 100%;
-                            background-color: rgba(200, 200, 200, 0.2);
-                            height: 20px;
-                            border-radius: 10px;
-                            overflow: hidden;
-                            margin-top: 10px;
-                        }
-
-                        .progress-bar-fill {
-                            height: 100%;
-                            width: 100%;
-                            background-color: #f44336;
-                            transition: width 1s linear;
-                        }
-
-                        @media (prefers-color-scheme: dark) {
-                            .timer-display {
-                                color: #fff;
-                            }
-
-                            .progress-bar-fill {
-                                background-color: #e57373;
-                            }
-                        }
-
-                        @media (prefers-color-scheme: light) {
-                            .timer-display {
-                                color: #333;
-                            }
-
-                            .progress-bar-fill {
-                                background-color: #f44336;
-                            }
-                        }
-                    </style>
-
-                    <div class="timer-container">
-                        <button class="timer-button" onclick="startTimer()">Timer starten</button>
-                        <div id="timer" class="timer-display">04:00</div>
-
-                        <div class="progress-bar-background">
-                            <div id="progress" class="progress-bar-fill"></div>
-                        </div>
-                    </div>
-
-                    <script>
-                        const totalSeconds = 240;
-                        let interval;
-
-                        function startTimer() {
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+    
+            .timer-container {
+                font-family: sans-serif;
+                text-align: center;
+                padding: 10px;
+            }
+    
+            .timer-button {
+                font-size: 16px;
+                padding: 6px 12px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background-color: #f44336;
+                color: white;
+                transition: background-color 0.3s;
+                margin: 0 4px;
+            }
+    
+            .timer-button:hover {
+                background-color: #e53935;
+            }
+    
+            .timer-display {
+                font-size: 24px;
+                font-weight: bold;
+                margin-top: 10px;
+                color: var(--timer-text-color, #fff);
+            }
+    
+            .progress-bar-background {
+                width: 100%;
+                background-color: rgba(200, 200, 200, 0.2);
+                height: 20px;
+                border-radius: 10px;
+                overflow: hidden;
+                margin-top: 10px;
+            }
+    
+            .progress-bar-fill {
+                height: 100%;
+                width: 100%;
+                background-color: #f44336;
+                transition: width 1s linear;
+            }
+    
+            @media (prefers-color-scheme: dark) {
+                .timer-display {
+                    color: #fff;
+                }
+    
+                .progress-bar-fill {
+                    background-color: #e57373;
+                }
+            }
+    
+            @media (prefers-color-scheme: light) {
+                .timer-display {
+                    color: #333;
+                }
+    
+                .progress-bar-fill {
+                    background-color: #f44336;
+                }
+            }
+        </style>
+    
+        <div class="timer-container">
+            <button class="timer-button" onclick="startTimer()">Start</button>
+            <button class="timer-button" onclick="pauseTimer()">Pause</button>
+            <button class="timer-button" onclick="resetTimer()">Reset</button>
+    
+            <div id="timer" class="timer-display">04:00</div>
+    
+            <div class="progress-bar-background">
+                <div id="progress" class="progress-bar-fill"></div>
+            </div>
+        </div>
+    
+        <script>
+            const totalSeconds = 240;
+            let interval;
+            let timeLeft = totalSeconds;
+            let isPaused = false;
+    
+            function startTimer() {
+                if (interval || timeLeft <= 0) return;
+    
+                interval = setInterval(() => {
+                    if (!isPaused && timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay(timeLeft);
+                        updateProgress(timeLeft);
+                        if (timeLeft === 0) {
                             clearInterval(interval);
-                            let timeLeft = totalSeconds;
-                            updateDisplay(timeLeft);
-                            updateProgress(timeLeft);
-                            
-                            interval = setInterval(() => {
-                                timeLeft--;
-                                if (timeLeft >= 0) {
-                                    updateDisplay(timeLeft);
-                                    updateProgress(timeLeft);
-                                } else {
-                                    clearInterval(interval);
-                                    document.getElementById("timer").textContent = "Zeit abgelaufen!";
-                                    document.getElementById("progress").style.width = "0%";
-                                    playSound();
-                                }
-                            }, 1000);
+                            interval = null;
+                            document.getElementById("timer").textContent = "Zeit abgelaufen!";
+                            document.getElementById("progress").style.width = "0%";
+                            playSound();
                         }
+                    }
+                }, 1000);
+            }
+    
+            function pauseTimer() {
+                isPaused = !isPaused;
+            }
+    
+            function resetTimer() {
+                clearInterval(interval);
+                interval = null;
+                timeLeft = totalSeconds;
+                isPaused = false;
+                updateDisplay(timeLeft);
+                updateProgress(timeLeft);
+            }
+    
+            function updateDisplay(seconds) {
+                const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const s = String(seconds % 60).padStart(2, '0');
+                document.getElementById("timer").textContent = m + ":" + s;
+            }
+    
+            function updateProgress(seconds) {
+                const percent = (seconds / totalSeconds) * 100;
+                document.getElementById("progress").style.width = percent + "%";
+            }
+    
+            function playSound() {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+                oscillator.connect(ctx.destination);
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + 1.5);
+            }
+    
+            // Initial anzeigen
+            updateDisplay(timeLeft);
+            updateProgress(timeLeft);
+        </script>
+    """, height=200)
 
-                        function updateDisplay(seconds) {
-                            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-                            const s = String(seconds % 60).padStart(2, '0');
-                            document.getElementById("timer").textContent = `${m}:${s}`;
-                        }
-
-                        function updateProgress(seconds) {
-                            const percent = (seconds / totalSeconds) * 100;
-                            document.getElementById("progress").style.width = `${percent}%`;
-                        }
-
-                        function playSound() {
-                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                            const oscillator = ctx.createOscillator();
-                            oscillator.type = 'sine';
-                            oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
-                            oscillator.connect(ctx.destination);
-                            oscillator.start();
-                            oscillator.stop(ctx.currentTime + 1.5);
-                        }
-                    </script>
-                """, height=170)
     
     teams = get_current("teams") or []
     groups = get_current("groups") or {}
@@ -526,133 +549,154 @@ elif page == "KO-Runde":
 
     st.subheader("Timer")
     components.html("""
-                    <style>
-                        :root {
-                            color-scheme: light dark;
-                        }
-
-                        .timer-container {
-                            font-family: sans-serif;
-                            text-align: center;
-                            padding: 10px;
-                        }
-
-                        .timer-button {
-                            font-size: 16px;
-                            padding: 6px 12px;
-                            border: none;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            background-color: #f44336; /* Helles Rot */
-                            color: white;
-                            transition: background-color 0.3s;
-                        }
-
-                        .timer-button:hover {
-                            background-color: #e53935; /* Dunkleres Rot beim Hover */
-                        }
-
-                        .timer-display {
-                            font-size: 24px;
-                            font-weight: bold;
-                            margin-top: 10px;
-                            color: var(--timer-text-color, #fff);  /* Dynamische Textfarbe */
-                        }
-
-                        .progress-bar-background {
-                            width: 100%;
-                            background-color: rgba(200, 200, 200, 0.2);
-                            height: 20px;
-                            border-radius: 10px;
-                            overflow: hidden;
-                            margin-top: 10px;
-                        }
-
-                        .progress-bar-fill {
-                            height: 100%;
-                            width: 100%;
-                            background-color: #f44336; /* Helles Rot für den Fortschrittsbalken */
-                            transition: width 1s linear;
-                        }
-
-                        /* Anpassung für Dark Mode */
-                        @media (prefers-color-scheme: dark) {
-                            .timer-display {
-                                color: #fff; /* Helle Schrift im Dark Mode */
-                            }
-
-                            .progress-bar-fill {
-                                background-color: #e57373; /* Helles Rot im Dark Mode */
-                            }
-                        }
-
-                        /* Anpassung für Light Mode */
-                        @media (prefers-color-scheme: light) {
-                            .timer-display {
-                                color: #333; /* Dunkle Schrift im Light Mode */
-                            }
-
-                            .progress-bar-fill {
-                                background-color: #f44336; /* Helles Rot im Light Mode */
-                            }
-                        }
-                    </style>
-
-                    <div class="timer-container">
-                        <button class="timer-button" onclick="startTimer()">Timer starten</button>
-                        <div id="timer" class="timer-display">07:00</div>
-
-                        <div class="progress-bar-background">
-                            <div id="progress" class="progress-bar-fill"></div>
-                        </div>
-                    </div>
-
-                    <script>
-                        const totalSeconds = 420;
-                        let interval;
-
-                        function startTimer() {
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+    
+            .timer-container {
+                font-family: sans-serif;
+                text-align: center;
+                padding: 10px;
+            }
+    
+            .timer-button {
+                font-size: 16px;
+                padding: 6px 12px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                background-color: #f44336;
+                color: white;
+                transition: background-color 0.3s;
+                margin: 0 4px;
+            }
+    
+            .timer-button:hover {
+                background-color: #e53935;
+            }
+    
+            .timer-display {
+                font-size: 24px;
+                font-weight: bold;
+                margin-top: 10px;
+                color: var(--timer-text-color, #fff);
+            }
+    
+            .progress-bar-background {
+                width: 100%;
+                background-color: rgba(200, 200, 200, 0.2);
+                height: 20px;
+                border-radius: 10px;
+                overflow: hidden;
+                margin-top: 10px;
+            }
+    
+            .progress-bar-fill {
+                height: 100%;
+                width: 100%;
+                background-color: #f44336;
+                transition: width 1s linear;
+            }
+    
+            @media (prefers-color-scheme: dark) {
+                .timer-display {
+                    color: #fff;
+                }
+    
+                .progress-bar-fill {
+                    background-color: #e57373;
+                }
+            }
+    
+            @media (prefers-color-scheme: light) {
+                .timer-display {
+                    color: #333;
+                }
+    
+                .progress-bar-fill {
+                    background-color: #f44336;
+                }
+            }
+        </style>
+    
+        <div class="timer-container">
+            <button class="timer-button" onclick="startTimer()">Start</button>
+            <button class="timer-button" onclick="pauseTimer()">Pause</button>
+            <button class="timer-button" onclick="resetTimer()">Reset</button>
+    
+            <div id="timer" class="timer-display">07:00</div>
+    
+            <div class="progress-bar-background">
+                <div id="progress" class="progress-bar-fill"></div>
+            </div>
+        </div>
+    
+        <script>
+            const totalSeconds = 420;
+            let interval;
+            let timeLeft = totalSeconds;
+            let isPaused = false;
+    
+            function startTimer() {
+                if (interval || timeLeft <= 0) return;
+    
+                interval = setInterval(() => {
+                    if (!isPaused && timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay(timeLeft);
+                        updateProgress(timeLeft);
+                        if (timeLeft === 0) {
                             clearInterval(interval);
-                            let timeLeft = totalSeconds;
-                            updateDisplay(timeLeft);
-                            updateProgress(timeLeft);
-                            
-                            interval = setInterval(() => {
-                                timeLeft--;
-                                if (timeLeft >= 0) {
-                                    updateDisplay(timeLeft);
-                                    updateProgress(timeLeft);
-                                } else {
-                                    clearInterval(interval);
-                                    document.getElementById("timer").textContent = "Zeit abgelaufen!";
-                                    document.getElementById("progress").style.width = "0%";
-                                    playSound();
-                                }
-                            }, 1000);
+                            interval = null;
+                            document.getElementById("timer").textContent = "Zeit abgelaufen!";
+                            document.getElementById("progress").style.width = "0%";
+                            playSound();
                         }
+                    }
+                }, 1000);
+            }
+    
+            function pauseTimer() {
+                isPaused = !isPaused;
+            }
+    
+            function resetTimer() {
+                clearInterval(interval);
+                interval = null;
+                timeLeft = totalSeconds;
+                isPaused = false;
+                updateDisplay(timeLeft);
+                updateProgress(timeLeft);
+            }
+    
+            function updateDisplay(seconds) {
+                const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const s = String(seconds % 60).padStart(2, '0');
+                document.getElementById("timer").textContent = m + ":" + s;
+            }
+    
+            function updateProgress(seconds) {
+                const percent = (seconds / totalSeconds) * 100;
+                document.getElementById("progress").style.width = percent + "%";
+            }
+    
+            function playSound() {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
+                oscillator.connect(ctx.destination);
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + 3);
+            }
+    
+            // Initial anzeigen
+            updateDisplay(timeLeft);
+            updateProgress(timeLeft);
+        </script>
+    """, height=200)
 
-                        function updateDisplay(seconds) {
-                            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-                            const s = String(seconds % 60).padStart(2, '0');
-                            document.getElementById("timer").textContent = `${m}:${s}`;
-                        }
-
-                        function updateProgress(seconds) {
-                            const percent = (seconds / totalSeconds) * 100;
-                            document.getElementById("progress").style.width = `${percent}%`;
-                        }
-
-                        function playSound() {
-                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                            const oscillator = ctx.createOscillator();
-                            oscillator.type = 'sine';
-                            oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
-                            oscillator.connect(ctx.destination);
-                            oscillator.start();
-                            oscillator.stop(ctx.currentTime + 1.5);
-                        }
-                    </script>
-                """, height=170)
     
     teams = get_current("teams")
 
