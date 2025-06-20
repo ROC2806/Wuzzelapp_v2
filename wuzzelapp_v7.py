@@ -85,14 +85,14 @@ if page in ["Teams", "Spielplan", "Gruppenphase", "KO-Runde"]:
     with col1:
         st.title(tournament_name)
     with col2:
-        st.image("logo.png", width=150)
+        st.image("logo.png", width=200)
 else:
     #st.title("Wuzzel Turnier")
     col1, col2 = st.columns([6, 1])
     with col1:
         st.title("Wuzzel Turnier")
     with col2:
-        st.image("logo.png", width=150)
+        st.image("logo.png", width=200)
 
 # --- Team Datenbank ---
 if page == "Team Datenbank":
