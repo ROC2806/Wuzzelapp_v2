@@ -100,7 +100,7 @@ if page == "Team Datenbank":
 
     db_config = st.secrets["mysql"]
     engine = f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}"
-    query = "SELECT name, player_1, player_2, timestamp FROM teams"
+    query = "SELECT id, name, player_1, player_2, timestamp FROM teams"
     teams = pd.read_sql(query, engine)
 
     st.dataframe(teams)
