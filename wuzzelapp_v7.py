@@ -189,19 +189,19 @@ if page == "Turnierverwaltung":
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
 
-     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
+    def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
-
+        
         # KO-Spiele
         if viertelfinale:
             spiele_kophase = 8  # 4 Viertelfinale, 2 Halbfinale, Spiel um Platz 3, Finale
         else:
             spiele_kophase = 4  # 2 Halbfinale, Spiel um Platz 3, Finale
-
-        gesamt_spiele = gesamt_spiele_gruppenphase + spiele_kophase
-        gesamtzeit_minuten = gesamt_spiele_gruppenphase * spielzeit_gruppenphase + spiele_kophase * spielzeit_kophase
-
+            
+            gesamt_spiele = gesamt_spiele_gruppenphase + spiele_kophase
+            gesamtzeit_minuten = gesamt_spiele_gruppenphase * spielzeit_gruppenphase + spiele_kophase * spielzeit_kophase
+        
         return gesamtzeit_minuten, gesamt_spiele
 
 
@@ -211,18 +211,18 @@ if page == "Turnierverwaltung":
         spielzeit_gruppenphase = st.number_input("Spielzeit Gruppenphase (Minuten)", min_value=1, step=1, value=8)
         spielzeit_kophase = st.number_input("Spielzeit KO-Phase (Minuten)", min_value=1, step=1, value=14)
         viertelfinale = st.radio("Mit Viertelfinale spielen?", ["Ja", "Nein"]) == "Ja"
-
-        if st.button("Turnierzeit berechnen"):
-            gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(
-                anzahl_gruppen,
-                anzahl_mannschaften,
-                spielzeit_gruppenphase,
-                spielzeit_kophase,
-                viertelfinale
-            )
-            gesamtzeit_stunden = gesamtzeit_minuten / 60
-            st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
-            st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
+    
+    if st.button("Turnierzeit berechnen"):
+        gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(
+        anzahl_gruppen,
+        anzahl_mannschaften,
+        spielzeit_gruppenphase,
+        spielzeit_kophase,
+        viertelfinale
+        )
+        gesamtzeit_stunden = gesamtzeit_minuten / 60
+        st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
+        st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
 
 
 # --- Teams ---
