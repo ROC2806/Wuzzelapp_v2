@@ -43,7 +43,7 @@ with st.sidebar:
 
     # Beispiel: Daten holen (müsstest du an deine Datenquelle anpassen)
     group_matches = get_current("group_matches")  # dict mit Gruppen -> Liste Spiele
-    ko_matches = get_current("ko_round")     # Liste KO-Spiele
+    #ko_matches = get_current("ko_round")     # Liste KO-Spiele
 
     # Berechnung Gruppenphase Fortschritt
     played_group = 0
