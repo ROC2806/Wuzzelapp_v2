@@ -72,7 +72,7 @@ with st.sidebar:
     st.progress(progress_group)
     st.markdown(f"          {played_group} / {total_group} Spiele gespielt")
 
-    st.markdown("KO-Runde")
+    #st.markdown("KO-Runde")
     #st.progress(progress_ko)
     #st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
 
@@ -189,7 +189,7 @@ if page == "Turnierverwaltung":
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
 
-     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
+    def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
 
@@ -566,10 +566,12 @@ elif page == "Gruppenphase":
                     update_stats(group_teams, matches)
                     render_table(pd.DataFrame(group_teams))
 
-
 elif page == "KO-Runde":
     st.header("KO-Runde")
 
+    # ===========================
+    # TIMER (dein Original bleibt!)
+    # ===========================
     st.subheader("Timer")
     components.html("""
         <style>
@@ -719,6 +721,7 @@ elif page == "KO-Runde":
             updateProgress(timeLeft);
         </script>
     """, height=200)
+
     # ===========================
     # TEAMS LADEN
     # ===========================
