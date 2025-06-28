@@ -212,17 +212,17 @@ if page == "Turnierverwaltung":
         spielzeit_kophase = st.number_input("Spielzeit KO-Phase (Minuten)", min_value=1, step=1, value=14)
         viertelfinale = st.radio("Mit Viertelfinale spielen?", ["Ja", "Nein"]) == "Ja"
     
-    if st.button("Turnierzeit berechnen"):
-        gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(
-        anzahl_gruppen,
-        anzahl_mannschaften,
-        spielzeit_gruppenphase,
-        spielzeit_kophase,
-        viertelfinale
-        )
-        gesamtzeit_stunden = gesamtzeit_minuten / 60
-        st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
-        st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
+        if st.button("Turnierzeit berechnen"):
+            gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(
+            anzahl_gruppen,
+            anzahl_mannschaften,
+            spielzeit_gruppenphase,
+            spielzeit_kophase,
+            viertelfinale
+            )
+            gesamtzeit_stunden = gesamtzeit_minuten / 60
+            st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
+            st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
 
 
 # --- Teams ---
