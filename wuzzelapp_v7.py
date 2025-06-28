@@ -57,14 +57,14 @@ with st.sidebar:
     progress_group = int((played_group / total_group) * 100) if total_group > 0 else 0
 
     # Berechnung KO-Runde Fortschritt
-    played_ko = 0
-    for ko_match in ko_matches:
-        if is_played(ko_match.get("score", "-")):
-            played_ko += 1
+    #played_ko = 0
+    #for ko_match in ko_matches:
+        #if is_played(ko_match.get("score", "-")):
+            #played_ko += 1
     #played_ko = sum(1 for m in ko_matches if is_played(m.get("score", "-")))
     #total_ko = len(ko_matches)
-    total_ko = 4
-    progress_ko = int((played_ko / total_ko) * 100) if total_ko > 0 else 0
+    #total_ko = 4
+    #progress_ko = int((played_ko / total_ko) * 100) if total_ko > 0 else 0
 
     #st.markdown("---")
 
@@ -73,8 +73,8 @@ with st.sidebar:
     st.markdown(f"          {played_group} / {total_group} Spiele gespielt")
 
     st.markdown("KO-Runde")
-    st.progress(progress_ko)
-    st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
+    #st.progress(progress_ko)
+    #st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
 
 
 if page in ["Teams", "Spielplan", "Gruppenphase", "KO-Runde"]:
@@ -189,28 +189,41 @@ if page == "Turnierverwaltung":
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
 
-    def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase):
-        # Anzahl Spiele pro Gruppe (Jeder gegen jeden): n*(n-1)/2
+     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
+        # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
-        # Anzahl KO-Spiele (z.B. Halbfinale (2), Spiel um Platz 3 (1), Finale (1) = 4 Spiele insgesamt)
-        spiele_kophase = 4
-        
+
+        # KO-Spiele
+        if viertelfinale:
+            spiele_kophase = 8  # 4 Viertelfinale, 2 Halbfinale, Spiel um Platz 3, Finale
+        else:
+            spiele_kophase = 4  # 2 Halbfinale, Spiel um Platz 3, Finale
+
         gesamt_spiele = gesamt_spiele_gruppenphase + spiele_kophase
-        
         gesamtzeit_minuten = gesamt_spiele_gruppenphase * spielzeit_gruppenphase + spiele_kophase * spielzeit_kophase
+
         return gesamtzeit_minuten, gesamt_spiele
+
 
     with st.expander("Turnierzeit Rechner"):
         anzahl_gruppen = st.number_input("Anzahl Gruppen", min_value=1, step=1, value=2)
-        anzahl_mannschaften = st.number_input("Anzahl Mannschaften", min_value=2, step=1, value=4)
+        anzahl_mannschaften = st.number_input("Anzahl Mannschaften pro Gruppe", min_value=2, step=1, value=4)
         spielzeit_gruppenphase = st.number_input("Spielzeit Gruppenphase (Minuten)", min_value=1, step=1, value=8)
         spielzeit_kophase = st.number_input("Spielzeit KO-Phase (Minuten)", min_value=1, step=1, value=14)
+        viertelfinale = st.radio("Mit Viertelfinale spielen?", ["Ja", "Nein"]) == "Ja"
 
         if st.button("Turnierzeit berechnen"):
-            gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase)
+            gesamtzeit_minuten, gesamt_spiele = berechne_turnierzeit_und_spiele(
+                anzahl_gruppen,
+                anzahl_mannschaften,
+                spielzeit_gruppenphase,
+                spielzeit_kophase,
+                viertelfinale
+            )
             gesamtzeit_stunden = gesamtzeit_minuten / 60
             st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
             st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
+
 
 # --- Teams ---
 elif page == "Teams":
@@ -707,18 +720,18 @@ elif page == "KO-Runde":
             updateProgress(timeLeft);
         </script>
     """, height=200)
-
-    
+    # ===========================
+    # TEAMS LADEN
+    # ===========================
     teams = get_current("teams")
-
     if len(teams) < 4:
         st.error("Mindestens 4 Teams erforderlich.")
         st.stop()
 
-    # KO-Runde initialisieren
-    if not get_current("ko_round") and st.button("KO-Runde generieren"):
-        df = pd.DataFrame(teams)
-        ko_round = []
+    # ===========================
+    # KO-RUNDE GENERIEREN
+    # ===========================
+    if not get_current("ko_round"):
 
         if get_current("group_phase"):
             groups = get_current("groups")
@@ -731,56 +744,118 @@ elif page == "KO-Runde":
                 for g in group_names
             }
 
-            if len(group_names) == 1:
-                top4 = group_stats[group_names[0]].head(4)
+            num_groups = len(group_names)
+
+            # Wie viele steigen auf?
+            if num_groups == 1:
+                qualified_teams = 8
+                top_teams = group_stats[group_names[0]].head(8)
+            elif num_groups == 2:
+                qualified_teams = 8
+                top_teams = pd.concat([group_stats[g].head(4) for g in group_names], ignore_index=True)
+            elif num_groups == 4:
+                qualified_teams = 8
+                top_teams = pd.concat([group_stats[g].head(2) for g in group_names], ignore_index=True)
+            else:
+                st.error("Der Modus für diese Anzahl an Gruppen ist nicht definiert.")
+                st.stop()
+
+        else:
+            num_groups = 0
+            qualified_teams = len(teams)
+            df = pd.DataFrame(teams)
+            top_teams = df.sort_values(by=["points", "goals_for"], ascending=False).head(8)
+
+        # Optionales Viertelfinale
+        play_quarters = False
+        if qualified_teams > 4:
+            play_quarters = st.checkbox("Viertelfinale spielen?", value=True)
+
+        if st.button("KO-Runde generieren"):
+            ko_round = []
+
+            if play_quarters:
+                ko_round = [
+                    {"round": "Viertelfinale 1", "team1": top_teams.iloc[0]["name"], "team2": top_teams.iloc[7]["name"], "score": "-"},
+                    {"round": "Viertelfinale 2", "team1": top_teams.iloc[1]["name"], "team2": top_teams.iloc[6]["name"], "score": "-"},
+                    {"round": "Viertelfinale 3", "team1": top_teams.iloc[2]["name"], "team2": top_teams.iloc[5]["name"], "score": "-"},
+                    {"round": "Viertelfinale 4", "team1": top_teams.iloc[3]["name"], "team2": top_teams.iloc[4]["name"], "score": "-"}
+                ]
+            else:
+               # Keine Viertelfinale => direkt die besten 4 Teams!
+                if get_current("group_phase"):
+                    # Kombiniere alle Gruppen, sortiere neu
+                    group_stats_combined = pd.concat(group_stats.values(), ignore_index=True)
+                    group_stats_combined = group_stats_combined.assign(Tordifferenz=lambda x: x["goals_for"] - x["goals_against"])
+                    top4 = group_stats_combined.sort_values(by=["points", "Tordifferenz", "goals_for"], ascending=False).head(4)
+                else:
+                    top4 = top_teams.head(4)
+
                 ko_round = [
                     {"round": "Halbfinale 1", "team1": top4.iloc[0]["name"], "team2": top4.iloc[3]["name"], "score": "-"},
                     {"round": "Halbfinale 2", "team1": top4.iloc[1]["name"], "team2": top4.iloc[2]["name"], "score": "-"}
                 ]
-            elif len(group_names) == 2:
-                gA, gB = group_names[0], group_names[1]
-                ko_round = [
-                    {"round": "Halbfinale 1", "team1": group_stats[gA].iloc[0]["name"], "team2": group_stats[gB].iloc[1]["name"], "score": "-"},
-                    {"round": "Halbfinale 2", "team1": group_stats[gB].iloc[0]["name"], "team2": group_stats[gA].iloc[1]["name"], "score": "-"}
-                ]
-            elif len(group_names) == 4:
-                top4 = [group_stats[g].iloc[0]["name"] for g in group_names]
-                ko_round = [
-                    {"round": "Halbfinale 1", "team1": top4[0], "team2": top4[3], "score": "-"},
-                    {"round": "Halbfinale 2", "team1": top4[1], "team2": top4[2], "score": "-"}
-                ]
-            else:
-                st.error("Der Modus für diese Anzahl an Gruppen ist nicht definiert.")
-                st.stop()
-        else:
-            top4 = df.sort_values(by=["points", "goals_for"], ascending=False).head(4)
-            ko_round = [
-                {"round": "Halbfinale 1", "team1": top4.iloc[0]["name"], "team2": top4.iloc[3]["name"], "score": "-"},
-                {"round": "Halbfinale 2", "team1": top4.iloc[1]["name"], "team2": top4.iloc[2]["name"], "score": "-"}
-            ]
 
-        set_current("ko_round", ko_round)
-        save_data(st.session_state.data)
-        st.success("KO-Runde erstellt!")
-        st.rerun()
+            set_current("ko_round", ko_round)
+            save_data(st.session_state.data)
+            st.success("KO-Runde erstellt!")
+            st.rerun()
 
-    # KO-Spiele anzeigen und Ergebnisse erfassen
+    # ===========================
+    # KO-SPIELE ANZEIGEN
+    # ===========================
     ko_round_data = get_current("ko_round")
     if ko_round_data:
-        new_scores = []
 
+        # ---- VIERTELFINALE ----
+        if "Viertelfinale 1" in ko_round_data[0]["round"]:
+            st.subheader("Viertelfinale")
+            new_scores = []
+
+            for idx, match in enumerate(ko_round_data[:4]):
+                st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
+                saved_score = match.get("score", "-")
+
+                g1, g2 = ("", "") if saved_score == "-" else map(int, saved_score.split(":"))
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    goals1 = st.number_input(f"Tore {match['team1']}", min_value=0, value=g1 if g1 != "" else None, key=f"qf_{idx}_1")
+                with col2:
+                    goals2 = st.number_input(f"Tore {match['team2']}", min_value=0, value=g2 if g2 != "" else None, key=f"qf_{idx}_2")
+
+                new_scores.append((idx, goals1, goals2))
+
+            if st.button("Viertelfinale speichern"):
+                winners = []
+                for idx, g1, g2 in new_scores:
+                    ko_round_data[idx]["score"] = f"{g1}:{g2}"
+                    if g1 > g2:
+                        winners.append(ko_round_data[idx]["team1"])
+                    elif g2 > g1:
+                        winners.append(ko_round_data[idx]["team2"])
+                    else:
+                        winners.append("n/a")  # Unentschieden prüfen!
+
+                if "Halbfinale 1" not in [m["round"] for m in ko_round_data]:
+                    ko_round_data += [
+                        {"round": "Halbfinale 1", "team1": winners[0], "team2": winners[3], "score": "-"},
+                        {"round": "Halbfinale 2", "team1": winners[1], "team2": winners[2], "score": "-"}
+                    ]
+
+                set_current("ko_round", ko_round_data)
+                save_data(st.session_state.data)
+                st.success("Halbfinale erstellt!")
+                st.rerun()
+
+        # ---- HALBFINALE ----
         st.subheader("Halbfinale")
-        for idx, match in enumerate(ko_round_data[:2]):
+        hf_matches = [m for m in ko_round_data if "Halbfinale" in m["round"]]
+        new_scores = []
+        for idx, match in enumerate(hf_matches):
             st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
             saved_score = match.get("score", "-")
-
-            if saved_score != "-" and ":" in saved_score:
-                try:
-                    g1, g2 = map(int, saved_score.split(":")) if ":" in saved_score else (0, 0)
-                except:
-                    g1, g2 = "", ""
-            else:
-                g1, g2 = "", ""
+            g1, g2 = ("", "") if saved_score == "-" else map(int, saved_score.split(":"))
 
             col1, col2 = st.columns(2)
             with col1:
@@ -788,19 +863,11 @@ elif page == "KO-Runde":
             with col2:
                 goals2 = st.number_input(f"Tore {match['team2']}", min_value=0, value=g2 if g2 != "" else None, key=f"hf_{idx}_2")
 
-            new_scores.append((idx, goals1, goals2))
+            new_scores.append((ko_round_data.index(match), goals1, goals2))
 
         if st.button("Halbfinalrunde speichern"):
             winners, losers = [], []
-            valid_games = 0
             for idx, g1, g2 in new_scores:
-                if g1 is None or g2 is None:
-                    all_scores_valid = False
-                    ko_round_data[idx]["score"] = "-"
-                    winners.append("n/a")
-                    losers.append("n/a")
-                    continue
-                
                 ko_round_data[idx]["score"] = f"{g1}:{g2}"
                 if g1 > g2:
                     winners.append(ko_round_data[idx]["team1"])
@@ -812,56 +879,39 @@ elif page == "KO-Runde":
                     winners.append("n/a")
                     losers.append("n/a")
 
-                valid_games += 1
-
-                if valid_games == 2 and len(ko_round_data) < 4 and "n/a" not in winners:
-                    ko_round_data.append({
-                        "round": "Spiel um Platz 3",
-                        "team1": losers[0],
-                        "team2": losers[1],
-                        "score": "-"
-                    })
-                    ko_round_data.append({
-                        "round": "Finale",
-                        "team1": winners[0],
-                        "team2": winners[1],
-                        "score": "-"
-                    })
+            if "Finale" not in [m["round"] for m in ko_round_data]:
+                ko_round_data.append({"round": "Spiel um Platz 3", "team1": losers[0], "team2": losers[1], "score": "-"})
+                ko_round_data.append({"round": "Finale", "team1": winners[0], "team2": winners[1], "score": "-"})
 
             set_current("ko_round", ko_round_data)
             save_data(st.session_state.data)
-            st.success("Ergebnisse gespeichert und nächste Runde erstellt!")
+            st.success("Finalrunde erstellt!")
             st.rerun()
 
-        # Finale und Spiel um Platz 3 anzeigen
-        if len(ko_round_data) >= 4:
+        # ---- FINALE + SPIEL UM PLATZ 3 ----
+        if any(m["round"] == "Finale" for m in ko_round_data):
             st.subheader("Finalrunde")
+            final_matches = [m for m in ko_round_data if m["round"] in ["Finale", "Spiel um Platz 3"]]
             final_scores = []
-            for idx, match in enumerate(ko_round_data[2:], start=2):
+
+            for idx, match in enumerate(final_matches):
                 st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
                 saved_score = match.get("score", "-")
-                
-                if saved_score != "-" and ":" in saved_score:
-                    try:
-                        g1, g2 = map(int, saved_score.split(":")) if ":" in saved_score else (0, 0)
-                    except:
-                        g1, g2 = "", ""
-                else: 
-                    g1, g2 = "", ""
+                g1, g2 = ("", "") if saved_score == "-" else map(int, saved_score.split(":"))
 
                 col1, col2 = st.columns(2)
                 with col1:
                     goals1 = st.number_input(f"Tore {match['team1']}", min_value=0, value=g1 if g1 != "" else None, key=f"final_{idx}_1")
                 with col2:
-                    goals2 = st.number_input(f"Tore {match['team2']}", min_value=0, value=g2 if g1 != "" else None, key=f"final_{idx}_2")
+                    goals2 = st.number_input(f"Tore {match['team2']}", min_value=0, value=g2 if g2 != "" else None, key=f"final_{idx}_2")
 
-                final_scores.append((idx, goals1, goals2))
-                #ko_round_data[idx]["score"] = f"{goals1}:{goals2}"
+                final_scores.append((ko_round_data.index(match), goals1, goals2))
 
             if st.button("Finalrunde speichern"):
                 for idx, g1, g2 in final_scores:
                     ko_round_data[idx]["score"] = f"{g1}:{g2}"
+
                 set_current("ko_round", ko_round_data)
                 save_data(st.session_state.data)
-                st.success("Finalrunden-Ergebnisse gespeichert!")
+                st.success("Finalrunde gespeichert!")
                 st.rerun()
