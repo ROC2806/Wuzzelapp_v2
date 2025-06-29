@@ -43,7 +43,7 @@ with st.sidebar:
 
     # Beispiel: Daten holen (müsstest du an deine Datenquelle anpassen)
     group_matches = get_current("group_matches")  # dict mit Gruppen -> Liste Spiele
-    #ko_matches = get_current("ko_round")     # Liste KO-Spiele
+    ko_matches = get_current("ko_round")     # Liste KO-Spiele
 
     # Berechnung Gruppenphase Fortschritt
     played_group = 0
@@ -72,9 +72,22 @@ with st.sidebar:
     st.progress(progress_group)
     st.markdown(f"          {played_group} / {total_group} Spiele gespielt")
 
-    #st.markdown("KO-Runde")
-    #st.progress(progress_ko)
-    #st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
+    if ko_matches:
+        played_ko = sum(1 for m in ko_matches if is_played(m.get("score", "-")))
+
+        # Prüfe, ob Viertelfinale gespielt wird
+        has_quarters = any("Viertelfinale" in m["round"] for m in ko_matches)
+
+        if has_quarters:
+            total_ko = 8  # 4 Viertelfinale + 2 Halbfinale + Finale + Spiel um Platz 3
+        else:
+            total_ko = 4  # 2 Halbfinale + Finale + Spiel um Platz 3
+
+        progress_ko = int((played_ko / total_ko) * 100) if total_ko > 0 else 0
+
+        st.markdown("KO-Runde")
+        st.progress(progress_ko)
+        st.markdown(f"          {played_ko} / {total_ko} Spiele gespielt")
 
 
 if page in ["Teams", "Spielplan", "Gruppenphase", "KO-Runde"]:
@@ -100,7 +113,7 @@ if page == "Team Datenbank":
 
     db_config = st.secrets["mysql"]
     engine = f"mysql+mysqlconnector://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}"
-    query = "SELECT id, name, player_1, player_2, timestamp FROM teams"
+    query = "SELECT name, player_1, player_2, timestamp FROM teams"
     teams = pd.read_sql(query, engine)
 
     st.dataframe(teams)
@@ -565,7 +578,7 @@ elif page == "Gruppenphase":
                     matches = group_matches.get(g, [])
                     update_stats(group_teams, matches)
                     render_table(pd.DataFrame(group_teams))
-
+# --- KO Phase ---
 elif page == "KO-Runde":
     st.header("KO-Runde")
 
