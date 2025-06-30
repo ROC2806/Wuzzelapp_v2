@@ -578,6 +578,7 @@ elif page == "Gruppenphase":
                     matches = group_matches.get(g, [])
                     update_stats(group_teams, matches)
                     render_table(pd.DataFrame(group_teams))
+
 # --- KO Phase ---
 elif page == "KO-Runde":
     st.header("KO-Runde")
@@ -585,7 +586,6 @@ elif page == "KO-Runde":
     # ===========================
     # TIMER (dein Original bleibt!)
     # ===========================
-    st.subheader("Timer")
     components.html("""
         <style>
             :root {
@@ -824,11 +824,11 @@ elif page == "KO-Runde":
     if ko_round_data:
 
         # ---- VIERTELFINALE ----
-        if "Viertelfinale 1" in ko_round_data[0]["round"]:
+        if any("Viertelfinale" in m["round"] for m in ko_round_data):
             st.subheader("Viertelfinale")
             new_scores = []
 
-            for idx, match in enumerate(ko_round_data[:4]):
+            for idx, match in enumerate([m for m in ko_round_data if "Viertelfinale" in m["round"]]):
                 st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
                 saved_score = match.get("score", "-")
 
@@ -843,13 +843,13 @@ elif page == "KO-Runde":
                 with col2:
                     goals2 = st.text_input(f"Tore {match['team2']}", value=g2, key=f"qf_{idx}_2")
 
-                new_scores.append((idx, goals1.strip(), goals2.strip()))
+                new_scores.append((ko_round_data.index(match), goals1.strip(), goals2.strip()))
 
             if st.button("Viertelfinale speichern"):
                 winners = []
                 for idx, g1_str, g2_str in new_scores:
-                    # Nur speichern, wenn was eingetragen ist
-                    if g1_str and g2_str:
+                    # Nur speichern, wenn beide Tore eingegeben wurden
+                    if g1_str != "" and g2_str != "":
                         try:
                             g1 = int(g1_str)
                             g2 = int(g2_str)
@@ -863,11 +863,13 @@ elif page == "KO-Runde":
                                 winners.append("n/a")
                         except ValueError:
                             st.warning(f"Ungültige Eingabe bei {ko_round_data[idx]['round']}.")
+                            winners.append(None)
                     else:
+                        # Kein Ergebnis gesetzt, Platzhalter None
                         winners.append(None)
 
                 # Halbfinale nur erstellen, wenn alle Ergebnisse da sind
-                if all(winners) and "Halbfinale 1" not in [m["round"] for m in ko_round_data]:
+                if all(winners) and not any("Halbfinale" in m["round"] for m in ko_round_data):
                     ko_round_data += [
                         {"round": "Halbfinale 1", "team1": winners[0], "team2": winners[3], "score": "-"},
                         {"round": "Halbfinale 2", "team1": winners[1], "team2": winners[2], "score": "-"}
@@ -879,58 +881,62 @@ elif page == "KO-Runde":
                 st.rerun()
 
         # ---- HALBFINALE ----
-        st.subheader("Halbfinale")
-        hf_matches = [m for m in ko_round_data if "Halbfinale" in m["round"]]
-        new_scores = []
+        if any("Halbfinale" in m["round"] for m in ko_round_data):
+            st.subheader("Halbfinale")
+            hf_matches = [m for m in ko_round_data if "Halbfinale" in m["round"]]
+            new_scores = []
 
-        for idx, match in enumerate(hf_matches):
-            st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
-            saved_score = match.get("score", "-")
+            for idx, match in enumerate(hf_matches):
+                st.markdown(f"**{match['round']}**: {match['team1']} vs {match['team2']}")
+                saved_score = match.get("score", "-")
 
-            if saved_score == "-":
-                g1, g2 = "", ""
-            else:
-                g1, g2 = saved_score.split(":")
-
-            col1, col2 = st.columns(2)
-            with col1:
-                goals1 = st.text_input(f"Tore {match['team1']}", value=g1, key=f"hf_{idx}_1")
-            with col2:
-                goals2 = st.text_input(f"Tore {match['team2']}", value=g2, key=f"hf_{idx}_2")
-
-            new_scores.append((ko_round_data.index(match), goals1.strip(), goals2.strip()))
-
-        if st.button("Halbfinalrunde speichern"):
-            winners, losers = [], []
-            for idx, g1_str, g2_str in new_scores:
-                if g1_str and g2_str:
-                    try:
-                        g1 = int(g1_str)
-                        g2 = int(g2_str)
-                        ko_round_data[idx]["score"] = f"{g1}:{g2}"
-                        if g1 > g2:
-                            winners.append(ko_round_data[idx]["team1"])
-                            losers.append(ko_round_data[idx]["team2"])
-                        elif g2 > g1:
-                            winners.append(ko_round_data[idx]["team2"])
-                            losers.append(ko_round_data[idx]["team1"])
-                        else:
-                            winners.append("n/a")
-                            losers.append("n/a")
-                    except ValueError:
-                        st.warning(f"Ungültige Eingabe bei {ko_round_data[idx]['round']}.")
+                if saved_score == "-":
+                    g1, g2 = "", ""
                 else:
-                    winners.append(None)
-                    losers.append(None)
+                    g1, g2 = saved_score.split(":")
 
-            if all(winners) and "Finale" not in [m["round"] for m in ko_round_data]:
-                ko_round_data.append({"round": "Spiel um Platz 3", "team1": losers[0], "team2": losers[1], "score": "-"})
-                ko_round_data.append({"round": "Finale", "team1": winners[0], "team2": winners[1], "score": "-"})
+                col1, col2 = st.columns(2)
+                with col1:
+                    goals1 = st.text_input(f"Tore {match['team1']}", value=g1, key=f"hf_{idx}_1")
+                with col2:
+                    goals2 = st.text_input(f"Tore {match['team2']}", value=g2, key=f"hf_{idx}_2")
 
-            set_current("ko_round", ko_round_data)
-            save_data(st.session_state.data)
-            st.success("Halbfinale gespeichert!")
-            st.rerun()
+                new_scores.append((ko_round_data.index(match), goals1.strip(), goals2.strip()))
+
+            if st.button("Halbfinalrunde speichern"):
+                winners, losers = [], []
+                for idx, g1_str, g2_str in new_scores:
+                    if g1_str != "" and g2_str != "":
+                        try:
+                            g1 = int(g1_str)
+                            g2 = int(g2_str)
+                            ko_round_data[idx]["score"] = f"{g1}:{g2}"
+                            if g1 > g2:
+                                winners.append(ko_round_data[idx]["team1"])
+                                losers.append(ko_round_data[idx]["team2"])
+                            elif g2 > g1:
+                                winners.append(ko_round_data[idx]["team2"])
+                                losers.append(ko_round_data[idx]["team1"])
+                            else:
+                                winners.append("n/a")
+                                losers.append("n/a")
+                        except ValueError:
+                            st.warning(f"Ungültige Eingabe bei {ko_round_data[idx]['round']}.")
+                            winners.append(None)
+                            losers.append(None)
+                    else:
+                        winners.append(None)
+                        losers.append(None)
+
+                # Finale & Spiel um Platz 3 nur erstellen, wenn alle Ergebnisse da sind
+                if all(winners) and not any(m["round"] in ["Finale", "Spiel um Platz 3"] for m in ko_round_data):
+                    ko_round_data.append({"round": "Spiel um Platz 3", "team1": losers[0], "team2": losers[1], "score": "-"})
+                    ko_round_data.append({"round": "Finale", "team1": winners[0], "team2": winners[1], "score": "-"})
+
+                set_current("ko_round", ko_round_data)
+                save_data(st.session_state.data)
+                st.success("Halbfinale gespeichert!")
+                st.rerun()
 
         # ---- FINALE + SPIEL UM PLATZ 3 ----
         if any(m["round"] == "Finale" for m in ko_round_data):
@@ -957,7 +963,7 @@ elif page == "KO-Runde":
 
             if st.button("Finalrunde speichern"):
                 for idx, g1_str, g2_str in final_scores:
-                    if g1_str and g2_str:
+                    if g1_str != "" and g2_str != "":
                         try:
                             g1 = int(g1_str)
                             g2 = int(g2_str)
@@ -968,5 +974,3 @@ elif page == "KO-Runde":
                 save_data(st.session_state.data)
                 st.success("Finalrunde gespeichert!")
                 st.rerun()
-
-
