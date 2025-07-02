@@ -609,7 +609,7 @@ elif page == "Gruppenphase":
                         {'selector': '',
                         'props': [
                             ('border-collapse', 'collapse'),
-                            ('border-radius', '15px'),
+                            ('border-radius', '10px'),
                             ('overflow', 'hidden')
                         ]},
                          {'selector': 'tbody td:nth-child(2), thead th:nth-child(2)',
