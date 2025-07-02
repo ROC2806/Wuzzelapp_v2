@@ -559,17 +559,75 @@ elif page == "Gruppenphase":
                                 t2["draws"] += 1
                         except:
                             continue
+            def zebra_stripes(row):
+                return [
+                    'background-color: #f9f9f9' if row.name % 2 == 0 else ''
+                    for _ in row
+                ]
 
             def render_table(df):
+                # Neue Spalte berechnen
                 df["Tordifferenz"] = df["goals_for"] - df["goals_against"]
                 df = df.sort_values(by=["points", "Tordifferenz", "goals_for"], ascending=False).reset_index(drop=True)
                 df["Rang"] = df.index + 1
-                st.dataframe(df[["Rang", "name", "games_played", "wins", "draws", "losses", "goals_for", "goals_against", "points"]]
-                             .rename(columns={
-                                 "name": "Team", "games_played": "Spiele", "wins": "S", "draws": "U", "losses": "N", 
-                                 "goals_for": "Tore", "goals_against": "Gegentore", "points": "Punkte"
-                             }),
-                             use_container_width=True)
+
+                df_display = df[[
+                    "Rang", "name", "games_played", "wins", "draws", "losses",
+                    "goals_for", "goals_against", "points"
+                ]].copy()
+
+                df_display = df_display.rename(columns={
+                    "name": "Team",
+                    "games_played": "Spiele",
+                    "wins": "S",
+                    "draws": "U",
+                    "losses": "N",
+                    "goals_for": "Tore",
+                    "goals_against": "Gegentore",
+                    "points": "Punkte"
+                })
+
+                styled_df = (
+                    df_display.style
+                    .apply(zebra_stripes, axis=1)
+                    #.highlight_max(subset=["Punkte"], color="lightgreen")
+                    #.background_gradient(subset=["Punkte"], cmap="Greens")  # Farbverlauf für Punkte
+                    .hide(axis="index")
+                    .set_table_styles([
+                        {'selector': 'thead th',
+                        'props': [
+                            ('background-color', '#FF4B4B'),
+                            ('color', 'white'),
+                            ('font-weight', 'bold'),
+                            ('text-align', 'center')
+                        ]},
+                        {'selector': 'tbody td',
+                        'props': [
+                            ('text-align', 'center'),
+                            ('font-family', 'Arial, sans-serif')
+                        ]},
+                        {'selector': '',
+                        'props': [
+                            ('border-collapse', 'collapse'),
+                            ('border-radius', '15px'),
+                            ('overflow', 'hidden')
+                        ]},
+                         {'selector': 'tbody td:nth-child(2), thead th:nth-child(2)',
+                            'props': [
+                                ('width', '200px'),
+                                ('min-width', '200px'),
+                                ('max-width', '200px'),
+                                ('text-align', 'left')  # Team linksbündig, falls gewünscht
+                            ]}
+                    ])
+                )
+
+                st.markdown(
+                    styled_df.to_html(),
+                    unsafe_allow_html=True
+                )
+
+                #st.dataframe(styled_df, use_container_width=True)
 
             with st.expander("Tabellen", expanded=True):
                 for g in groups.keys():
@@ -974,3 +1032,6 @@ elif page == "KO-Runde":
                 save_data(st.session_state.data)
                 st.success("Finalrunde gespeichert!")
                 st.rerun()
+
+
+
