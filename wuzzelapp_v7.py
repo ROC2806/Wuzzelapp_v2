@@ -582,8 +582,8 @@ elif page == "Gruppenphase":
                     "wins": "S",
                     "draws": "U",
                     "losses": "N",
-                    "goals_for": "Tore",
-                    "goals_against": "Gegentore",
+                    "goals_for": "TF",
+                    "goals_against": "TG",
                     "points": "Punkte"
                 })
 
