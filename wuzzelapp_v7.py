@@ -287,7 +287,7 @@ elif page == "Teams":
 # --- Gruppenphase ---
 elif page == "Gruppenphase":
     st.subheader("Gruppenphase")
-    st.subheader("Timer")
+    #st.subheader("Timer")
     components.html("""
         <style>
             :root {
