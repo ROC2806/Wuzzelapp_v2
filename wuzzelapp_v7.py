@@ -317,7 +317,7 @@ elif page == "Gruppenphase":
             }
     
             .timer-display {
-                font-size: 24px;
+                font-size: 44px;
                 font-weight: bold;
                 margin-top: 10px;
                 color: var(--timer-text-color, #fff);
@@ -326,8 +326,8 @@ elif page == "Gruppenphase":
             .progress-bar-background {
                 width: 100%;
                 background-color: rgba(200, 200, 200, 0.2);
-                height: 20px;
-                border-radius: 10px;
+                height: 30px;
+                border-radius: 15px;
                 overflow: hidden;
                 margin-top: 10px;
             }
@@ -673,7 +673,7 @@ elif page == "KO-Runde":
             }
     
             .timer-display {
-                font-size: 24px;
+                font-size: 44px;
                 font-weight: bold;
                 margin-top: 10px;
                 color: var(--timer-text-color, #fff);
@@ -682,10 +682,10 @@ elif page == "KO-Runde":
             .progress-bar-background {
                 width: 100%;
                 background-color: rgba(200, 200, 200, 0.2);
-                height: 20px;
+                height: 30px;
                 border-radius: 10px;
                 overflow: hidden;
-                margin-top: 10px;
+                margin-top: 15px;
             }
     
             .progress-bar-fill {
