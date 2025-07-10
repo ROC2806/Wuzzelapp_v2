@@ -655,7 +655,7 @@ elif page == "KO-Runde":
     # TIMER (dein Original bleibt!)
     # ===========================
     components.html("""
-       <style>
+                       <style>
     :root {
         color-scheme: light dark;
     }
@@ -810,6 +810,7 @@ elif page == "KO-Runde":
     // Initial
     updateDisplay(timeLeft);
     updateProgress(timeLeft);
+</script>
     """, height=200)
 
     # ===========================
