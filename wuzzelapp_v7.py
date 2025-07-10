@@ -380,7 +380,7 @@ elif page == "Gruppenphase":
     
             function startTimer() {
                 if (interval || timeLeft <= 0) return;
-    
+                playSound();
                 interval = setInterval(() => {
                     if (!isPaused && timeLeft > 0) {
                         timeLeft--;
@@ -428,7 +428,7 @@ elif page == "Gruppenphase":
                 oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
                 oscillator.connect(ctx.destination);
                 oscillator.start();
-                oscillator.stop(ctx.currentTime + 1.5);
+                oscillator.stop(ctx.currentTime + 4);
             }
     
             // Initial anzeigen
@@ -736,7 +736,7 @@ elif page == "KO-Runde":
     
             function startTimer() {
                 if (interval || timeLeft <= 0) return;
-    
+                playSound();
                 interval = setInterval(() => {
                     if (!isPaused && timeLeft > 0) {
                         timeLeft--;
@@ -784,7 +784,7 @@ elif page == "KO-Runde":
                 oscillator.frequency.setValueAtTime(1000, ctx.currentTime);
                 oscillator.connect(ctx.destination);
                 oscillator.start();
-                oscillator.stop(ctx.currentTime + 3);
+                oscillator.stop(ctx.currentTime + 4);
             }
     
             // Initial anzeigen
