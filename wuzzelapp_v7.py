@@ -279,6 +279,9 @@ elif page == "Teams":
             #st.subheader("Gruppenzuordnung der Teams")
             group_names = list(groups.keys())
 
+            # Platzhalter für „keine Gruppe“
+            selectbox_options = ["– Bitte auswählen –"] + group_names
+
             # Erstelle ein Mapping von Teamname zu Gruppe (zum Vorbefüllen)
             team_to_group = {}
             for g, t_list in groups.items():
@@ -289,9 +292,19 @@ elif page == "Teams":
             new_groups = {g: [] for g in group_names}
 
             for team in teams:
-                default_group = team_to_group.get(team["name"], group_names[0])
-                chosen_group = st.selectbox(f"Gruppe für Team '{team['name']}'", options=group_names, index=group_names.index(default_group))
-                new_groups[chosen_group].append(team)
+                # default_group = team_to_group.get(team["name"], group_names[0])
+                default_group = team_to_group.get(team["name"], "– Bitte auswählen –")
+                #chosen_group = st.selectbox(f"Gruppe für Team '{team['name']}'", options=group_names, index=group_names.index(default_group))
+                #new_groups[chosen_group].append(team)
+                
+                chosen_group = st.selectbox(
+                    f"Gruppe für Team '{team['name']}'",
+                    options=selectbox_options,
+                    index=selectbox_options.index(default_group)
+                )
+
+                if chosen_group != "– Bitte auswählen –":
+                    new_groups[chosen_group].append(team)
 
         # Wenn Gruppe geändert, abspeichern
         if st.button("Gruppenzuordnung speichern"):
