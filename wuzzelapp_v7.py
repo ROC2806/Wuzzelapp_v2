@@ -220,7 +220,7 @@ if page == "Turnierverwaltung":
             
             **Anstoß, Ballbesitz und Mitte:**
             - Team 1 ist im Spielplan die blaue Mannschaft
-            - EDen Anstoß zu Spielbeginn und zur zweiten Halbzeit hat Team Blau
+            - Anstoß zu Spielbeginn und zur zweiten Halbzeit hat Team Blau
             - Nach einem Tor: Gegner erhält den Ball   
             - Ball im Aus: Jeweilige Verteidigung erhält den Ball
             - Mitte zählt, aber nicht beim Anstoß 
