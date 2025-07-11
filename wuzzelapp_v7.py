@@ -202,6 +202,32 @@ if page == "Turnierverwaltung":
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
 
+    with st.expander("Turnier Spielregeln"):
+        st.markdown("""
+            **Spielmodus:**  
+            - 2 gegen 2  
+            - Gruppenphase (jeder gegen jeden in der Gruppe) und KO-Phase (Viertelfinale, Halbfinale, Finale)
+            - Es gibt 4 Gruppen, die vor Turnierbeginn ausgelost werden.
+            - Die jeweils besten zwei Teams jeder Gruppe steigen in die KO-Phase auf.
+            
+            **Spielzeit:**  
+            - Gruppenphase: 2 Halbzeiten à 4 Minuten  
+            - KO-Phase: 2 Halbzeiten à 7 Minuten
+            
+            **Punktevergabe in Gruppenphase:**  
+            - Sieg: 3 Punkte  
+            - Unentschieden: 1 Punkt
+            
+            **Anstoß & Ballbesitz:**  
+            - Erster Anstoß und bei Halbzeit: Ball wird eingeworfen  
+            - Nach einem Tor: Gegner erhält den Ball  
+            - Mitte zählt, aber nicht beim Anstoß  
+            - Ball im Aus: Jeweilige Verteidigung erhält den Ball
+            
+            **Unentschieden in KO-Phase:**  
+            - Golden Goal mit Einwurf
+            """)
+
     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
@@ -236,32 +262,6 @@ if page == "Turnierverwaltung":
             gesamtzeit_stunden = gesamtzeit_minuten / 60
             st.success(f"Ungefähre Spielzeit: {gesamtzeit_stunden:.2f} Stunden")
             st.info(f"Gesamtanzahl der Spiele: {int(gesamt_spiele)}")
-
-    with st.expander("Turnier Spielregeln"):
-        st.markdown("""
-            **Spielmodus:**  
-            - 2 gegen 2  
-            - Gruppenphase (jeder gegen jeden in der Gruppe) und KO-Phase (Viertelfinale, Halbfinale, Finale)
-            - Es gibt 4 Gruppen, die vor Turnierbeginn ausgelost werden.
-            - Die jeweils besten zwei Teams jeder Gruppe steigen in die KO-Phase auf.
-            
-            **Spielzeit:**  
-            - Gruppenphase: 2 Halbzeiten à 4 Minuten  
-            - KO-Phase: 2 Halbzeiten à 7 Minuten
-            
-            **Punktevergabe in Gruppenphase:**  
-            - Sieg: 3 Punkte  
-            - Unentschieden: 1 Punkt
-            
-            **Anstoß & Ballbesitz:**  
-            - Erster Anstoß und bei Halbzeit: Ball wird eingeworfen  
-            - Nach einem Tor: Gegner erhält den Ball  
-            - Mitte zählt, aber nicht beim Anstoß  
-            - Ball im Aus: Jeweilige Verteidigung erhält den Ball
-            
-            **Unentschieden in KO-Phase:**  
-            - Golden Goal mit Einwurf
-            """)
 
 # --- Teams ---
 elif page == "Teams":
