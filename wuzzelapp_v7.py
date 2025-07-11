@@ -914,20 +914,42 @@ elif page == "KO-Runde":
                     {"round": "Viertelfinale 3", "team1": top_teams.iloc[2]["name"], "team2": top_teams.iloc[5]["name"], "score": "-"},
                     {"round": "Viertelfinale 4", "team1": top_teams.iloc[3]["name"], "team2": top_teams.iloc[4]["name"], "score": "-"}
                 ]
-            else:
-               # Keine Viertelfinale => direkt die besten 4 Teams!
-                if get_current("group_phase"):
-                    # Kombiniere alle Gruppen, sortiere neu
-                    group_stats_combined = pd.concat(group_stats.values(), ignore_index=True)
-                    group_stats_combined = group_stats_combined.assign(Tordifferenz=lambda x: x["goals_for"] - x["goals_against"])
-                    top4 = group_stats_combined.sort_values(by=["points", "Tordifferenz", "goals_for"], ascending=False).head(4)
-                else:
-                    top4 = top_teams.head(4)
+            elif not play_quarters and num_groups == 2:
+                group_A = group_stats[group_names[0]].head(2)  # Platz 1 und 2 Gruppe A
+                group_B = group_stats[group_names[1]].head(2)  # Platz 1 und 2 Gruppe B
 
+                ko_round = [
+                    {"round": "Halbfinale 1", "team1": group_A.iloc[0]["name"], "team2": group_B.iloc[1]["name"], "score": "-"},
+                    {"round": "Halbfinale 2", "team1": group_B.iloc[0]["name"], "team2": group_A.iloc[1]["name"], "score": "-"}
+                ]
+            elif not play_quarters and num_groups == 4:
+                # Hole nur die Gruppensieger
+                group_winners = [group_stats[g].head(1) for g in group_names]
+                df_winners = pd.concat(group_winners, ignore_index=True)
+            
+                # Sortiere z.B. nach Punkten/Tordifferenz
+                #df_winners = df_winners.assign(Tordifferenz=lambda x: x["goals_for"] - x["goals_against"])
+                #top4 = df_winners.sort_values(by=["points", "Tordifferenz", "goals_for"], ascending=False).head(4)
+            
                 ko_round = [
                     {"round": "Halbfinale 1", "team1": top4.iloc[0]["name"], "team2": top4.iloc[3]["name"], "score": "-"},
                     {"round": "Halbfinale 2", "team1": top4.iloc[1]["name"], "team2": top4.iloc[2]["name"], "score": "-"}
                 ]
+                
+            #else:
+               # Keine Viertelfinale => direkt die besten 4 Teams!
+                #if get_current("group_phase"):
+                    # Kombiniere alle Gruppen, sortiere neu
+                    #group_stats_combined = pd.concat(group_stats.values(), ignore_index=True)
+                    #group_stats_combined = group_stats_combined.assign(Tordifferenz=lambda x: x["goals_for"] - x["goals_against"])
+                    #top4 = group_stats_combined.sort_values(by=["points", "Tordifferenz", "goals_for"], ascending=False).head(4)
+                #else:
+                    #top4 = top_teams.head(4)
+
+                #ko_round = [
+                    #{"round": "Halbfinale 1", "team1": top4.iloc[0]["name"], "team2": top4.iloc[3]["name"], "score": "-"},
+                    #{"round": "Halbfinale 2", "team1": top4.iloc[1]["name"], "team2": top4.iloc[2]["name"], "score": "-"}
+                #]
 
             set_current("ko_round", ko_round)
             save_data(st.session_state.data)
