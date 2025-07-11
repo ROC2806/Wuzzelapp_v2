@@ -300,7 +300,7 @@ elif page == "Teams":
                 chosen_group = st.selectbox(
                     f"Gruppe für Team '{team['name']}'",
                     options=selectbox_options,
-                    index=selectbox_options.index(default_group)
+                    index=selectbox_options.index(default_group),
                     key=f"group_select_{team['name']}"
                 )
 
