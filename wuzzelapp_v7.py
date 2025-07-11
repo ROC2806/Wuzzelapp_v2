@@ -218,14 +218,15 @@ if page == "Turnierverwaltung":
             - Sieg: 3 Punkte  
             - Unentschieden: 1 Punkt
             
-            **Anstoß, Ballbesitz und Mitte:**  
-            - Erster Anstoß und bei Halbzeit: Ball wird eingeworfen  
+            **Anstoß, Ballbesitz und Mitte:**
+            - Team 1 im Spielplan ist Blau
+            - Erster Anstoß und bei Halbzeit: Blau hat Anstoß 
             - Nach einem Tor: Gegner erhält den Ball   
             - Ball im Aus: Jeweilige Verteidigung erhält den Ball
             - Mitte zählt, aber nicht beim Anstoß 
             
             **Unentschieden in KO-Phase:**  
-            - Bei Gleichstand entscheidet ein Golden Goal per Einwurf
+            - Bei Gleichstand entscheidet ein Golden Goal per Einwurf von Blau
             """)
     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
