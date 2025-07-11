@@ -201,7 +201,7 @@ if page == "Turnierverwaltung":
                     set_current("teams", teams)
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
-
+                    
     with st.expander("Turnier Spielregeln"):
         st.markdown("""
             **Spielmodus:**  
@@ -227,7 +227,7 @@ if page == "Turnierverwaltung":
             **Unentschieden in KO-Phase:**  
             - Golden Goal mit Einwurf
             """)
-
+        
     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
