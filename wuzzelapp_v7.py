@@ -201,7 +201,32 @@ if page == "Turnierverwaltung":
                     set_current("teams", teams)
                     save_data(st.session_state.data)
                     st.success(f"{len(selected_teams)} Teams übernommen.")
-        
+                    
+    with st.expander("Turnier Spielregeln"):
+        st.markdown("""
+            **Spielmodus:**  
+            - 2 gegen 2  
+            - Gruppenphase (jeder gegen jeden in der Gruppe) und KO-Phase (Viertelfinale, Halbfinale, Finale)
+            - Es gibt 4 Gruppen, die vor Turnierbeginn ausgelost werden
+            - Die jeweils besten zwei Teams jeder Gruppe steigen in die KO-Phase auf
+            
+            **Spielzeit:**  
+            - Gruppenphase: 2 Halbzeiten à 4 Minuten  
+            - KO-Phase: 2 Halbzeiten à 7 Minuten
+            
+            **Punktevergabe in Gruppenphase:**  
+            - Sieg: 3 Punkte  
+            - Unentschieden: 1 Punkt
+            
+            **Anstoß, Ballbesitz und Mitte:**  
+            - Erster Anstoß und bei Halbzeit: Ball wird eingeworfen  
+            - Nach einem Tor: Gegner erhält den Ball   
+            - Ball im Aus: Jeweilige Verteidigung erhält den Ball
+            - Mitte zählt, aber nicht beim Anstoß 
+            
+            **Unentschieden in KO-Phase:**  
+            - Bei Gleichstand entscheidet ein Golden Goal per Einwurf
+            """)
     def berechne_turnierzeit_und_spiele(anzahl_gruppen, anzahl_mannschaften, spielzeit_gruppenphase, spielzeit_kophase, viertelfinale):
         # Spiele pro Gruppe (Jeder gegen jeden)
         gesamt_spiele_gruppenphase = anzahl_mannschaften * (anzahl_mannschaften - 1) / 2 * anzahl_gruppen
@@ -239,7 +264,7 @@ if page == "Turnierverwaltung":
 
 # --- Teams ---
 elif page == "Teams":
-    st.header("Gruppenzuordnung")
+    st.header("Teams")
  
     teams = get_current("teams") or []
     num_groups = get_current("num_groups") or 1
