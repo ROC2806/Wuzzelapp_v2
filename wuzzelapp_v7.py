@@ -301,6 +301,7 @@ elif page == "Teams":
                     f"Gruppe für Team '{team['name']}'",
                     options=selectbox_options,
                     index=selectbox_options.index(default_group)
+                    key=f"group_select_{team['name']}"
                 )
 
                 if chosen_group != "– Bitte auswählen –":
